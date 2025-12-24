@@ -18,11 +18,13 @@ const fs = require('fs')
 function activate(context) {
 	console.log("Codemmn is active babbyyy!!!")
 
-	let disposable = vscode.workspace.onDidSaveTextDocument( async(document) => {
+	// this will run everytime something is saved in the file 
+	let disposable = vscode.workspace.onDidSaveTextDocument( async (document) => {
 			
 		// check if its workingn fine or not 
 		console.log("So you just saved this file....huh ??" + document.fileName)
 
+		// ask if the settings have codemmn folder or not 
 		const config = vscode.workspace.getConfiguration('codemmn')
 		const apiKey = config.get('geminiApiKey')
 
@@ -32,13 +34,32 @@ function activate(context) {
 			return;
 		}
 
+
+		// check if saamne wale ne folder me chzein khol bhi rkhi hai ya nhi
+		if(!vscode.workspace.workspaceFolders){
+			throw new Error("Open a folder first!!")
+		}
+
+		const workspaceFolder = vscode.workspace.workspaceFolders[0].uri.fsPath
+		const notesDir = path.join(workspaceFolder, '.codemmn')
+		const notesFile = path.join(notesDir, 'studyNotes.md')
+
 		// check the fkin memory bsdk
 		// give uniq id to each file 
 		const stateKey = `codemmn_bookmark_${document.uri.toString()}`
 
 		// check last time kahan tak padha tha
 		let lastLineProcessed = context.workspaceState.get(stateKey, 0)
+
+		// totals no of line in your file 
 		const currentLineCount = document.lineCount;
+		
+		// fixin something here 
+		if(!fs.existsSync(notesFile)) {
+			console.log("Notes file is missing!!! Regenerating full Notes...")
+			// make the lastLineProcesseed as 0 ki bc shuru se start karo sb
+			lastLineProcessed = 0
+		}
 
 		// what if agar koi bc code delete karde ?? toh reset kardo bc
 		if(currentLineCount < lastLineProcessed) {
@@ -79,21 +100,35 @@ function activate(context) {
 			// const fileContent = document.getText()
 
 			// goood promptt they sayy
-			const prompt = `
-                You are an expert Technical Writer for ${lang}.
-                The user has APPENDED new code to their file: **${fileName}**.
-                
-                **NEW ADDED CODE:**
+// THE FUSION PROMPT: Code First + Deep Explanation
+            const prompt = `
+                You are an expert Technical Mentor for ${lang} programming.
+                The user has added code to: **${fileName}**.
+
+                **NEW CODE:**
                 \`\`\`${lang}
                 ${newCodeOnly}
                 \`\`\`
 
                 **Instructions:**
-                1. Explain ONLY this new code block. Do NOT explain previous code.
-                2. Identify the concept (e.g., "New Function: XYZ" or "Added Loop").
-                3. Keep it SHORT (Bullet points).
-                4. Use Hinglish if comments are in Hindi.
-                5. Format: Markdown.
+                1. **Structure:** Always show the Code Block FIRST, then the Explanation.
+                2. **Code:** Use the provided code snippet exactly as is.
+                3. **Explanation:**Explain what each line of code is doing in around 2-3 lines. use simple and easy to understand language please.
+                4. **Language:** If comments are in Hindi/Hinglish, use Hinglish for explanation. Otherwise, use simple English. If comments are bit funny or sarcastic then use funny language in notes to for that specifc part else use normal language.
+                5. **Context:** If the user wrote a comment (e.g., "// Creating Promise"), use that as the Title.
+
+                **Strict Output Template:**
+
+                ### 🔹 [Title based on Comment or Logic]
+
+                \`\`\`${lang}
+                [Insert the code snippet here]
+                \`\`\`
+
+                **Explanation:**
+                * **Concept:** [Explain what this code block is doing in simple terms...in 1-2 lines at max]
+                * **How it's working ?** [Explain ceach line of code line by line and in 1-2 lines per line of code]
+                * **Key Syntax:** [Mention any important keywords like 'async', 'promise', etc.]
             `;
 
 			// play with gemini now 
@@ -104,20 +139,11 @@ function activate(context) {
 
 			const responseText = response.text
 
-			// check if saamne wale ne folder me chzein khol bhi rkhi hai ya nhi
-			if(!vscode.workspace.workspaceFolders){
-				throw new Error("Open a folder first!!")
-			}
+
+			
 
 
-			// save the mfkin notes now 
-
-
-			const workspaceFolder = vscode.workspace.workspaceFolders[0].uri.fsPath
-			const notesDir = path.join(workspaceFolder, '.codemmn')
-			const notesFile = path.join(notesDir, 'studyNotes.md')
-
-			9// if folder doesnt exist us casee maa khod do 
+		 	// if folder doesnt exist us casee maa khod do 
 			if(!fs.existsSync(notesDir)) {
 				fs.mkdirSync(notesDir, {recursive: true})
 			}

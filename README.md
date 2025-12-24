@@ -1,65 +1,87 @@
-# codemmn README
+# Codemmn
 
-This is the README for your extension "codemmn". After writing up a brief description, we recommend including the following sections.
+A VS Code extension that auto-generates study notes from your code using Google's Gemini AI. Write code, hit save, get explanations. Simple.
 
-## Features
+## What it does
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Automatically creates notes when you save your code
+- Only processes new lines (incremental, not the whole file)
+- Understands Hinglish comments
+- Matches your comment style (professional or funny)
+- Stores everything in `.codemmn/studyNotes.md`
 
-For example if there is an image subfolder under your extension project workspace:
+## Setup
 
-\!\[feature X\]\(images/feature-x.png\)
+1. Get a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Open VS Code Settings and search "Codemmn"
+3. Paste your API key
+4. Start coding and save files
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+That's it.
+
+## How it works
+
+```
+Write code → Save file → AI generates notes → Check .codemmn/studyNotes.md
+```
+
+## Example
+
+Your code:
+```javascript
+// Creating a Promise
+const myPromise = new Promise((resolve, reject) => {
+    setTimeout(() => resolve("Done!"), 1000);
+});
+```
+
+Generated notes:
+```markdown
+### Creating a Promise
+
+```javascript
+const myPromise = new Promise((resolve, reject) => {
+    setTimeout(() => resolve("Done!"), 1000);
+});
+```
+
+**Explanation:**
+* **Concept:** Creates a Promise that resolves after 1 second
+* **How it's working?**
+  - `new Promise()` creates a promise object
+  - `setTimeout` delays execution by 1000ms
+  - `resolve("Done!")` fulfills the promise
+* **Key Syntax:** Promise, async, setTimeout, resolve
+```
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- VS Code 1.107.0+
+- Gemini API key
+- Internet connection
 
-## Extension Settings
+## Configuration
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+`codemmn.geminiApiKey` - Your Gemini API key
 
-For example:
+## Tips
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+- Write comments for better explanations
+- Hinglish works fine
+- Notes accumulate with each save
+- Check `.codemmn/studyNotes.md` to review
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- Only works on file save
+- Notes file grows over time
+- Large code blocks take a few seconds
 
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
 
 ---
 
-## Working with Markdown
+Built with Gemini AI for students and learners.
 
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+---
 
 **Enjoy!**
