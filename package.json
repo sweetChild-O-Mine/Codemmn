@@ -1,8 +1,14 @@
 {
   "name": "codemmn",
+  "publisher": "Slashhh",
   "displayName": "Codemmn",
   "description": "generates notes by analyzing you code and comments",
-  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sweetChild-O-Mine/Codemmn.git"
+  },
+  "icon": "icon.png",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.107.0"
   },
