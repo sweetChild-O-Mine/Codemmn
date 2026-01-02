@@ -18,17 +18,53 @@ const fs = require('fs')
 function activate(context) {
 	console.log("Codemmn is active babbyyy!!!")
 
+	// check if fthe user has api key or ont t
+	if(!vscode.workspace.getConfiguration('codemmn').get('geminiApiKey')) {
+
+		(async () => {
+			// throw the input box ig 
+			const key = await vscode.window.showInputBox({
+				prompt: "Enter you Gemini API Key please",
+				placeHolder: "Hint text shown in grey",
+				ignoreFocusOut: true
+			})
+
+			if(key) {
+
+				// update the entered api 
+				vscode.workspace.getConfiguration('codemmn').update('geminiApiKey', key, true)
+
+				vscode.window.showInformationMessage("Yayy!!..API key updated!!!")
+			} else {
+				vscode.window.showInformationMessage("API key isnt saved!!")
+			}
+		
+		})()
+	}
+
 	// this will run everytime something is saved in the file 
 	let disposable = vscode.workspace.onDidSaveTextDocument( async (document) => {
 			
 		// check if its workingn fine or not 
 		console.log("So you just saved this file....huh ??" + document.fileName)
 
+		const ignoreExtensions = ['.json', '.md', '.txt', '.lock']
+		const ignoreFolders = ['node_modules', '.git', '.vscode', '.codemmn']
+
+		// const fileExt = path.extname(document.fileName)
+
+		if(ignoreExtensions.some(ext => document.fileName.endsWith(ext)) || 
+		   ignoreFolders.some(folder => document.fileName.includes(folder)) ) {
+
+			console.log("Skipping file: " + document.fileName);
+			return
+		}
+
 		// ask if the settings have codemmn folder or not 
 		const config = vscode.workspace.getConfiguration('codemmn')
 		const apiKey = config.get('geminiApiKey')
 
-		// agar key nhi user ko chilllao bc 
+		// // agar key nhi user ko chilllao bc 
 		if(!apiKey || apiKey === "") {
 			vscode.window.showErrorMessage("Where the fuck is your Gemini API key?? Go to settings and search 'Codemmn' and add your key there")
 			return;
@@ -42,7 +78,11 @@ function activate(context) {
 
 		const workspaceFolder = vscode.workspace.workspaceFolders[0].uri.fsPath
 		const notesDir = path.join(workspaceFolder, '.codemmn')
-		const notesFile = path.join(notesDir, 'studyNotes.md')
+
+		const fileName = path.basename(document.fileName)	
+		const notesFileName = path.parse(fileName).name + '.notes.md'
+
+		const notesFile = path.join(notesDir, notesFileName)
 
 		// check the fkin memory bsdk
 		// give uniq id to each file 
@@ -53,9 +93,12 @@ function activate(context) {
 
 		// totals no of line in your file 
 		const currentLineCount = document.lineCount;
+
+		// get the info 
+		const isNewNotesFile = !fs.existsSync(notesFile)
 		
 		// fixin something here 
-		if(!fs.existsSync(notesFile)) {
+		if(isNewNotesFile) {
 			console.log("Notes file is missing!!! Regenerating full Notes...")
 			// make the lastLineProcesseed as 0 ki bc shuru se start karo sb
 			lastLineProcessed = 0
@@ -72,17 +115,21 @@ function activate(context) {
 			return;
 		}
 
-		vscode.window.showInformationMessage(`Codemmn: Reading new lines (${lastLineProcessed} to ${currentLineCount})... `);
+		// vscode.window.showInformationMessage(`Codemmn: Reading new lines (${lastLineProcessed} to ${currentLineCount})... `);
 
 		// give some info 
 		// vscode.window.showInformationMessage(`Codemmn: Working on ${path.basename(document.fileName)}... `)
 
 		// main systemmmmm bcccc
 		try {
+			
+			if(isNewNotesFile) {
+				vscode.window.showInformationMessage(`Codemmn: Creating notes for ${fileName}`)
+			}
+
 			const ai = new GoogleGenAI({apiKey: apiKey})
 
 			const lang = document.languageId
-			const fileName = path.basename(document.fileName)
 
 			//  dont read the whole file ...only read from last line to current line
 			const newCodeRange = new vscode.Range(lastLineProcessed,0, currentLineCount, 0)
@@ -139,10 +186,6 @@ function activate(context) {
 
 			const responseText = response.text
 
-
-			
-
-
 		 	// if folder doesnt exist us casee maa khod do 
 			if(!fs.existsSync(notesDir)) {
 				fs.mkdirSync(notesDir, {recursive: true})
@@ -157,7 +200,9 @@ function activate(context) {
 			context.workspaceState.update(stateKey, currentLineCount)
 
 			// give the final msg ki bc bn gye tere notess
-			vscode.window.showInformationMessage(`Notes generated for ${fileName}`)
+			if(isNewNotesFile) {
+				vscode.window.showInformationMessage(`Notes file created for ${fileName}`)
+			}
 
 			
 		} catch (error) {
@@ -177,3 +222,4 @@ module.exports = {
 	activate,
 	deactivate
 }
+

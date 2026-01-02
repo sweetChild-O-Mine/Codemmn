@@ -6,23 +6,36 @@ A VS Code extension that auto-generates study notes from your code using Google'
 
 - Automatically creates notes when you save your code
 - Only processes new lines (incremental, not the whole file)
+- Separate notes file for each source file (`index.js` gets `index.notes.md`)
+- Asks for API key on first install (no settings hunting)
+- Ignores non-code files like `.json`, `.md`, `node_modules`, `.git`
 - Understands Hinglish comments
 - Matches your comment style (professional or funny)
-- Stores everything in `.codemmn/studyNotes.md`
+- Quiet mode - only notifies when creating a new notes file
 
 ## Setup
 
-1. Get a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Open VS Code Settings and search "Codemmn"
-3. Paste your API key
-4. Start coding and save files
+1. Install the extension
+2. On first launch, it asks for your Gemini API key (get one free from [Google AI Studio](https://aistudio.google.com/app/apikey))
+3. Start coding and save files
 
 That's it.
 
 ## How it works
 
 ```
-Write code → Save file → AI generates notes → Check .codemmn/studyNotes.md
+Write code → Save file → AI generates notes → Check .codemmn/filename.notes.md
+```
+
+## File structure
+
+```
+your-project/
+  ├── index.js
+  ├── utils.js
+  └── .codemmn/
+      ├── index.notes.md    ← notes for index.js
+      └── utils.notes.md    ← notes for utils.js
 ```
 
 ## Example
@@ -69,7 +82,7 @@ const myPromise = new Promise((resolve, reject) => {
 - Write comments for better explanations
 - Hinglish works fine
 - Notes accumulate with each save
-- Check `.codemmn/studyNotes.md` to review
+- Each file gets its own notes file in `.codemmn/`
 
 ## Known Issues
 
